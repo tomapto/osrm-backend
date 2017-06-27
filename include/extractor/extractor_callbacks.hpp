@@ -60,6 +60,7 @@ class ExtractorCallbacks
     using MapKey = std::tuple<std::string, std::string, std::string, std::string>;
     using MapVal = unsigned;
     std::unordered_map<MapKey, MapVal> string_map;
+    std::unordered_map<std::string, ClassData> classes_map;
     guidance::LaneDescriptionMap lane_description_map;
     ExtractionContainers &external_memory;
     bool fallback_to_duration;

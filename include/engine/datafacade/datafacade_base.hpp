@@ -87,6 +87,10 @@ class BaseDataFacade
 
     virtual extractor::TravelMode GetTravelMode(const NodeID id) const = 0;
 
+    virtual ClassData GetClassData(const NodeID id) const = 0;
+
+    virtual std::vector<std::string> GetClasses(const ClassData class_data) const = 0;
+
     virtual std::vector<RTreeLeaf> GetEdgesInBox(const util::Coordinate south_west,
                                                  const util::Coordinate north_east) const = 0;
 

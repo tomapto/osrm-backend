@@ -195,6 +195,17 @@ class MockBaseDataFacade : public engine::datafacade::BaseDataFacade
     {
         return TRAVEL_MODE_INACCESSIBLE;
     }
+
+    ClassData GetClassData(const NodeID /*id*/) const override final
+    {
+        return 0;
+    }
+
+    std::vector<std::string> GetClasses(const ClassData /*data*/) const override final
+    {
+        return {};
+    }
+
     NameID GetNameIndex(const NodeID /* id */) const override { return 0; }
 
     StringView GetNameForID(const NameID) const override final { return {}; }

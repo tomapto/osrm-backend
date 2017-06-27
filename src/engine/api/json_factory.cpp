@@ -263,6 +263,17 @@ util::json::Object makeRouteStep(guidance::RouteStep step, util::json::Value geo
     route_step.values["maneuver"] = makeStepManeuver(std::move(step.maneuver));
     route_step.values["geometry"] = std::move(geometry);
 
+    if (!step.classes.empty())
+    {
+        util::json::Array classes;
+        classes.values.reserve(step.classes.size());
+        std::transform(
+            step.classes.begin(),
+            step.classes.end(),
+            std::back_inserter(classes.values),
+            [](const std::string &class_name) { return util::json::String{class_name}; });
+    }
+
     util::json::Array intersections;
     intersections.values.reserve(step.intersections.size());
     std::transform(step.intersections.begin(),

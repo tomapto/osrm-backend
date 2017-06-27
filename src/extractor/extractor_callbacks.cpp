@@ -175,6 +175,37 @@ void ExtractorCallbacks::ProcessWay(const osmium::Way &input_way, const Extracti
         }
     }
 
+    const auto classStringsToMask = [this](const std::string& class_name) {
+        auto iter = classes_map.find(class_name);
+        if (iter == classes_map.end())
+        {
+            if (classes_map.size() > MAX_CLASS_INDEX)
+            {
+                throw util::exception("Maximum number of classes if " + std::to_string(MAX_CLASS_INDEX + 1));
+            }
+            ClassData class_mask = 1u << classes_map.size();
+            classes_map[class_name] = class_mask;
+            return class_mask;
+        }
+        else
+        {
+            return iter->second;
+        }
+    };
+    const auto classesToMask = [&](const auto &classes) {
+        for (const auto &pair : classes)
+        {
+            ClassData classes = 0;
+            if (pair.second)
+            {
+                classes |= classStringsToMask(pair.first);
+            }
+            return classes;
+        }
+    };
+    const ClassData forward_classes = classesToMask(parsed_way.forward_classes);
+    const ClassData backward_classes = classesToMask(parsed_way.backward_classes);
+
     const auto laneStringToDescription = [](const std::string &lane_string) -> TurnLaneDescription {
         if (lane_string.empty())
             return {};
@@ -319,7 +350,8 @@ void ExtractorCallbacks::ProcessWay(const osmium::Way &input_way, const Extracti
         (force_split_edges || (parsed_way.forward_rate != parsed_way.backward_rate) ||
          (parsed_way.forward_speed != parsed_way.backward_speed) ||
          (parsed_way.forward_travel_mode != parsed_way.backward_travel_mode) ||
-         (turn_lane_id_forward != turn_lane_id_backward));
+         (turn_lane_id_forward != turn_lane_id_backward) ||
+         (forward_classes != backward_classes));
 
     if (in_forward_direction)
     { // add (forward) segments or (forward,backward) for non-split edges in backward direction
@@ -341,6 +373,7 @@ void ExtractorCallbacks::ProcessWay(const osmium::Way &input_way, const Extracti
                                           parsed_way.forward_restricted,
                                           split_edge,
                                           parsed_way.forward_travel_mode,
+                                          forward_classes,
                                           turn_lane_id_forward,
                                           road_classification,
                                           {}));
@@ -367,6 +400,7 @@ void ExtractorCallbacks::ProcessWay(const osmium::Way &input_way, const Extracti
                                           parsed_way.backward_restricted,
                                           split_edge,
                                           parsed_way.backward_travel_mode,
+                                          backward_classes,
                                           turn_lane_id_backward,
                                           road_classification,
                                           {}));

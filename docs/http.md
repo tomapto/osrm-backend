@@ -582,6 +582,7 @@ step.
 - `pronunciation`: The pronunciation hint of the way name. Will be `undefined` if there is no pronunciation hit.
 - `destinations`: The destinations of the way. Will be `undefined` if there are no destinations.
 - `mode`: A string signifying the mode of transportation.
+- `classes`: An array of strings signifying the classes of the road as specified in the profile.
 - `maneuver`: A `StepManeuver` object representing the maneuver.
 - `intersections`: A list of `Intersection` objects that are passed along the segment, the very first belonging to the StepManeuver
 - `rotary_name`: The name for the rotary. Optionally included, if the step is a rotary and a rotary name is available.
@@ -595,6 +596,7 @@ step.
    "mode" : "driving",
    "duration" : 15.6,
    "weight" : 15.6,
+   "classes": ["toll", "restricted"],
    "intersections" : [
       {  "bearings" : [ 10, 92, 184, 270 ],
          "lanes" : [

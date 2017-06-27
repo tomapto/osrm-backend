@@ -106,6 +106,9 @@ static const EdgeWeight INVALID_EDGE_WEIGHT = std::numeric_limits<EdgeWeight>::m
 static const EdgeDuration MAXIMAL_EDGE_DURATION = std::numeric_limits<EdgeDuration>::max();
 static const TurnPenalty INVALID_TURN_PENALTY = std::numeric_limits<TurnPenalty>::max();
 
+using ClassData = std::uint8_t;
+static const std::uint8_t MAX_CLASS_INDEX = 8 - 1;
+
 // FIXME the bitfields we use require a reduced maximal duration, this should be kept consistent
 // within the code base. For now we have to ensure that we don't case 30 bit to -1 and break any
 // min() / operator< checks due to the invalid truncation. In addition, using signed and unsigned

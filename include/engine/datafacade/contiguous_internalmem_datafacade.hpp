@@ -318,7 +318,7 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
     void InitializeEdgeBasedNodeDataInformationPointers(storage::DataLayout &layout,
                                                         char *memory_ptr)
     {
-        auto via_geometry_list_ptr =
+        const auto via_geometry_list_ptr =
             layout.GetBlockPtr<GeometryID>(memory_ptr, storage::DataLayout::GEOMETRY_ID_LIST);
         util::vector_view<GeometryID> geometry_ids(
             via_geometry_list_ptr, layout.num_entries[storage::DataLayout::GEOMETRY_ID_LIST]);
@@ -338,10 +338,16 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
         util::vector_view<extractor::TravelMode> travel_modes(
             travel_mode_list_ptr, layout.num_entries[storage::DataLayout::TRAVEL_MODE_LIST]);
 
+        const auto classes_list_ptr = layout.GetBlockPtr<ClassData>(
+            memory_ptr, storage::DataLayout::CLASSES_LIST);
+        util::vector_view<ClassData> classes(
+            classes_list_ptr, layout.num_entries[storage::DataLayout::CLASSES_LIST]);
+
         edge_based_node_data = extractor::EdgeBasedNodeDataView(std::move(geometry_ids),
                                                                 std::move(name_ids),
                                                                 std::move(component_ids),
-                                                                std::move(travel_modes));
+                                                                std::move(travel_modes),
+                                                                std::move(classes));
     }
 
     void InitializeEdgeInformationPointers(storage::DataLayout &layout, char *memory_ptr)
@@ -781,6 +787,27 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
     extractor::TravelMode GetTravelMode(const NodeID id) const override final
     {
         return edge_based_node_data.GetTravelMode(id);
+    }
+
+    ClassData GetClassData(const NodeID id) const override final
+    {
+        return edge_based_node_data.GetClassData(id);
+    }
+
+    std::vector<std::string> GetClasses(const ClassData class_data) const override final
+    {
+        std::vector<std::string> classes;
+
+        // FIXME move to own function
+        auto class_data_copy = class_data;
+        while (class_data_copy > 0)
+        {
+            auto class_index = util::msb(class_data_copy);
+            classes.emplace_back(m_profile_properties->GetClassName(class_index));
+            class_data_copy = class_data_copy & ~(1u << class_index);
+        }
+
+        return classes;
     }
 
     NameID GetNameIndex(const NodeID id) const override final

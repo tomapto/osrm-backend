@@ -272,6 +272,33 @@ function Handlers.handle_speed(way,result,data,profile)
   end
 end
 
+-- add class information
+function Handlers.handle_classes(way,result,data,profile)
+    local forward_toll, backward_toll = Tag.get_forward_backward_by_key("toll")
+    local forward_route, backward_route = Tag.get_forward_backward_by_key("route")
+
+    if forward_toll == "yes" then
+        result.forward_classes["toll"] = true
+    end
+    if backward_toll == "yes" then
+        result.backward_classes["toll"] = true
+    end
+
+    if forward_route == "ferry" then
+        result.forward_classes["ferry"] = true
+    end
+    if backward_route == "ferry" then
+        result.backward_classes["ferry"] = true
+    end
+
+    if result.forward_restricted then
+        result.forward_classes["restricted"] = true
+    end
+    if result.backward_restricted then
+        result.backward_classes["restricted"] = true
+    end
+end
+
 -- reduce speed on bad surfaces
 function Handlers.handle_surface(way,result,data,profile)
   local surface = way:get_value_by_key("surface")
