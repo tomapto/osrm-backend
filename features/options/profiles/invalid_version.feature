@@ -6,7 +6,7 @@ Feature: Invalid profile API versions
     Scenario: Undefined API version
         Given the profile file
           """
-          function way_function(way, result)
+          function way_function(profile, way, result)
             result.forward_mode = mode.driving
             result.forward_speed = 1
           end

@@ -41,7 +41,7 @@ Feature: Projection to nearest point on road
     Scenario: Projection results negative duration
         Given the profile file "testbot" extended with
         """
-        function segment_function (segment)
+        function segment_function (profile, segment)
           segment.weight = 5.5
           segment.duration = 2.8
         end

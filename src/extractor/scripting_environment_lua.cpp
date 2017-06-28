@@ -470,17 +470,20 @@ void Sol2ScriptingEnvironment::InitContext(LuaScriptingContext &context)
         // clear global not used in v2
         context.state["properties"] = sol::nullopt;
 
-        // call mandatory initialze function
-        sol::function intialize_function = context.state["initialize"];
-        if (intialize_function.valid())
-            intialize_function();
-        else
+        // call mandatory initialize function
+        sol::function initialize_function = context.state["initialize"];
+        if (!initialize_function.valid())
             throw util::exception("Profile must have an initialize() function.");
+        sol::optional<sol::table> profile_table = initialize_function();
+        if (profile_table == sol::nullopt)
+            throw util::exception("Profile initialize() must return a table.");
+        else
+            context.profile_table = profile_table;
 
         // call optional specialize function
         sol::function specialize_function = context.state["specialize"];
         if (specialize_function.valid())
-            specialize_function();
+            specialize_function(profile_table.value());
 
         // set constants
         context.state.new_enum("constants",
@@ -490,44 +493,43 @@ void Sol2ScriptingEnvironment::InitContext(LuaScriptingContext &context)
                                std::numeric_limits<TurnPenalty>::max());
 
         // read properties from 'profile' table
-        sol::optional<std::string> weight_name = context.state["profile"]["weight_name"];
+        sol::optional<std::string> weight_name = profile_table.value()["weight_name"];
         if (weight_name != sol::nullopt)
             context.properties.SetWeightName(weight_name.value());
 
         sol::optional<std::int32_t> traffic_signal_penalty =
-            context.state["profile"]["traffic_signal_penalty"];
+            profile_table.value()["traffic_signal_penalty"];
         if (traffic_signal_penalty != sol::nullopt)
             context.properties.SetTrafficSignalPenalty(traffic_signal_penalty.value());
 
-        sol::optional<std::int32_t> u_turn_penalty = context.state["profile"]["u_turn_penalty"];
+        sol::optional<std::int32_t> u_turn_penalty = profile_table.value()["u_turn_penalty"];
         if (u_turn_penalty != sol::nullopt)
             context.properties.SetUturnPenalty(u_turn_penalty.value());
 
         sol::optional<double> max_speed_for_map_matching =
-            context.state["profile"]["max_speed_for_map_matching"];
+            profile_table.value()["max_speed_for_map_matching"];
         if (max_speed_for_map_matching != sol::nullopt)
             context.properties.SetMaxSpeedForMapMatching(max_speed_for_map_matching.value());
 
         sol::optional<bool> continue_straight_at_waypoint =
-            context.state["profile"]["continue_straight_at_waypoint"];
+            profile_table.value()["continue_straight_at_waypoint"];
         if (continue_straight_at_waypoint != sol::nullopt)
             context.properties.continue_straight_at_waypoint =
                 continue_straight_at_waypoint.value();
 
-        sol::optional<bool> use_turn_restrictions =
-            context.state["profile"]["use_turn_restrictions"];
+        sol::optional<bool> use_turn_restrictions = profile_table.value()["use_turn_restrictions"];
         if (use_turn_restrictions != sol::nullopt)
             context.properties.use_turn_restrictions = use_turn_restrictions.value();
 
-        sol::optional<bool> left_hand_driving = context.state["profile"]["left_hand_driving"];
+        sol::optional<bool> left_hand_driving = profile_table.value()["left_hand_driving"];
         if (left_hand_driving != sol::nullopt)
             context.properties.left_hand_driving = left_hand_driving.value();
 
-        sol::optional<unsigned> weight_precision = context.state["profile"]["weight_precision"];
+        sol::optional<unsigned> weight_precision = profile_table.value()["weight_precision"];
         if (weight_precision != sol::nullopt)
             context.properties.weight_precision = weight_precision.value();
 
-        sol::optional<bool> force_split_edges = context.state["profile"]["force_split_edges"];
+        sol::optional<bool> force_split_edges = profile_table.value()["force_split_edges"];
         if (force_split_edges != sol::nullopt)
             context.properties.force_split_edges = force_split_edges.value();
 
@@ -647,7 +649,7 @@ Sol2ScriptingEnvironment::GetStringListFromTable(const std::string &table_name)
     auto &context = GetSol2Context();
     BOOST_ASSERT(context.state.lua_state() != nullptr);
     std::vector<std::string> strings;
-    sol::table table = context.state["profile"][table_name];
+    sol::table table = context.profile_table.value()[table_name];
     if (table.valid())
     {
         for (auto &&pair : table)
@@ -695,7 +697,7 @@ void Sol2ScriptingEnvironment::SetupSources()
 
     if (source_function.valid())
     {
-        source_function();
+        source_function(context.profile_table);
     }
 }
 
@@ -708,7 +710,7 @@ void Sol2ScriptingEnvironment::ProcessTurn(ExtractionTurn &turn)
     case 2:
         if (context.has_turn_penalty_function)
         {
-            context.turn_function(turn);
+            context.turn_function(context.profile_table, turn);
 
             // Turn weight falls back to the duration value in deciseconds
             // or uses the extracted unit-less weight value
@@ -772,6 +774,8 @@ void Sol2ScriptingEnvironment::ProcessSegment(ExtractionSegment &segment)
         switch (context.api_version)
         {
         case 2:
+            context.segment_function(context.profile_table, segment);
+            break;
         case 1:
             context.segment_function(segment);
             break;
@@ -788,14 +792,32 @@ void LuaScriptingContext::ProcessNode(const osmium::Node &node, ExtractionNode &
 {
     BOOST_ASSERT(state.lua_state() != nullptr);
 
-    node_function(node, result);
+    switch (api_version)
+    {
+    case 2:
+        node_function(profile_table, node, result);
+        break;
+    case 1:
+    case 0:
+        node_function(node, result);
+        break;
+    }
 }
 
 void LuaScriptingContext::ProcessWay(const osmium::Way &way, ExtractionWay &result)
 {
     BOOST_ASSERT(state.lua_state() != nullptr);
 
-    way_function(way, result);
+    switch (api_version)
+    {
+    case 2:
+        way_function(profile_table, way, result);
+        break;
+    case 1:
+    case 0:
+        way_function(way, result);
+        break;
+    }
 }
 }
 }

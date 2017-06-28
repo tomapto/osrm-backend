@@ -8,12 +8,11 @@ local Sequence = require('lib/sequence')
 local Handlers = require("lib/handlers")
 local next = next       -- bind to local for speed
 
-local walking_speed = 5
 
-profile = {}
 
 function initialize()
-  profile = {
+  local walking_speed = 5
+  return {
     weight_name                   = 'duration',
     max_speed_for_map_matching    = 40/3.6, -- kmph -> m/s
     use_turn_restrictions         = false,
@@ -139,7 +138,7 @@ function initialize()
   }
 end
 
-function node_function (node, result)
+function node_function (profile, node, result)
   -- parse access and barrier tags
   local access = find_access_tag(node, profile.access_tags_hierarchy)
   if access then
@@ -167,7 +166,7 @@ function node_function (node, result)
 end
 
 -- main entry point for processsing a way
-function way_function(way, result)
+function way_function(profile, way, result)
   -- the intial filtering of ways based on presence of tags
   -- affects processing times significantly, because all ways
   -- have to be checked.
@@ -243,7 +242,7 @@ function way_function(way, result)
   Handlers.run(handlers,way,result,data,profile)
 end
 
-function turn_function (turn)
+function turn_function (profile, turn)
   turn.duration = 0.
 
   if turn.direction_modifier == direction_modifier.u_turn then

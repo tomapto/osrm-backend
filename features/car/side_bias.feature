@@ -4,7 +4,7 @@ Feature: Testbot - side bias
     Background:
         Given the profile file "testbot" extended with
         """
-        function specialize()
+        function specialize(profile)
           profile.left_hand_driving = true
         end
         """
@@ -12,7 +12,7 @@ Feature: Testbot - side bias
     Scenario: Left hand bias
         Given the profile file "car" extended with
         """
-        function specialize()
+        function specialize(profile)
           profile.left_hand_driving = true
           profile.turn_bias = profile.left_hand_driving and 1/1.075 or 1.075
         end
@@ -37,7 +37,7 @@ Feature: Testbot - side bias
     Scenario: Right hand bias
         Given the profile file "car" extended with
         """
-        function specialize()
+        function specialize(profile)
           use_left_hand_driving = false
           profile.left_hand_driving = use_left_hand_driving
           profile.turn_bias = use_left_hand_driving and 1/1.075 or 1.075

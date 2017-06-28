@@ -14,7 +14,7 @@ Feature: osrm-extract lua ways:get_nodes()
     Scenario: osrm-extract - Passing base file
         Given the profile file "testbot" extended with
         """
-        function way_function(way, result)
+        function way_function(profile, way, result)
           for _, node in ipairs(way:get_nodes()) do
             print('node id ' .. node:id())
           end

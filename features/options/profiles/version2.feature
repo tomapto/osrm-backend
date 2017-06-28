@@ -11,8 +11,7 @@ api_version = 2
 profile = {}
 
 function initialize()
-  -- set profile properties
-  profile = {
+  return {
     max_speed_for_map_matching      = 180/3.6,
     use_turn_restrictions           = true,
     continue_straight_at_waypoint   = true,
@@ -21,11 +20,11 @@ function initialize()
   }
 end
 
-function node_function (node, result)
+function node_function (profile, node, result)
   print ('node_function ' .. node:id())
 end
 
-function way_function(way, result)
+function way_function(profile, way, result)
   result.name = way:get_value_by_key('name')
   result.weight = 10
   result.forward_mode = mode.driving
@@ -35,13 +34,13 @@ function way_function(way, result)
   print ('way_function ' .. way:id() .. ' ' .. result.name)
 end
 
-function turn_function (turn)
+function turn_function (profile, turn)
   print('turn_function', turn.angle, turn.turn_type, turn.direction_modifier, turn.has_traffic_light)
   turn.weight = turn.angle == 0 and 0 or 4.2
   turn.duration = turn.weight
 end
 
-function segment_function (segment)
+function segment_function (profile, segment)
     print ('segment_function ' .. segment.source.lon .. ' ' .. segment.source.lat)
 end
            """

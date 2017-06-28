@@ -64,7 +64,7 @@ Feature: Car - weights
     Scenario: Distance weights
         Given the profile file "car" extended with
         """
-        function specialize()
+        function specialize(profile)
           profile.weight_name = 'distance'
         end
         """

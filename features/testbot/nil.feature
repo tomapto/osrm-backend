@@ -3,7 +3,7 @@ Feature: Testbot - Check assigning nil values
     Scenario: Assign nil values to all way strings
         Given the profile file "testbot" extended with
         """
-        function way_function (way, result)
+        function way_function (profile, way, result)
             result.name = "name"
             result.ref = "ref"
             result.destinations = "destinations"

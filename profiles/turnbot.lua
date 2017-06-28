@@ -3,6 +3,6 @@
 
 require 'testbot'
 
-function turn_function (turn)
+function turn_function (profile, turn)
     turn.duration = 20 * math.abs(turn.angle) / 180
 end

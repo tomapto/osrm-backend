@@ -8,14 +8,13 @@ local Handlers = require("lib/handlers")
 local next = next       -- bind to local for speed
 local limit = require("lib/maxspeed").limit
 
-local default_speed = 15
-local walking_speed = 6
-
-profile = {}
 
 function initialize()
+  local default_speed = 15
+  local walking_speed = 6
+
   -- must be global because it's accesed externally
-  profile = {
+   return {
     max_speed_for_map_matching    = 110/3.6, -- kmph -> m/s
     use_turn_restrictions         = false,
     continue_straight_at_waypoint = false,
@@ -24,7 +23,8 @@ function initialize()
     call_tagless_node_function    = false,
 
     default_mode              = mode.cycling,
-    default_speed             = 15,
+    default_speed             = default_speed,
+    walking_speed             = walking_speed,
     oneway_handling           = true,
     traffic_light_penalty     = 2,
     u_turn_penalty            = 20,
@@ -207,7 +207,7 @@ local function parse_maxspeed(source)
     return n
 end
 
-function node_function (node, result)
+function node_function (profile, node, result)
   -- parse access and barrier tags
   local highway = node:get_value_by_key("highway")
   local is_crossing = highway and highway == "crossing"
@@ -235,7 +235,7 @@ function node_function (node, result)
   end
 end
 
-function way_function (way, result)
+function way_function (profile, way, result)
   -- the intial filtering of ways based on presence of tags
   -- affects processing times significantly, because all ways
   -- have to be checked.
@@ -363,8 +363,8 @@ function way_function (way, result)
     way_type_allows_pushing = true
   elseif access and profile.access_tag_whitelist[access]  then
     -- unknown way, but valid access tag
-    result.forward_speed = default_speed
-    result.backward_speed = default_speed
+    result.forward_speed = profile.default_speed
+    result.backward_speed = profile.default_speed
     way_type_allows_pushing = true
   end
 
@@ -442,18 +442,18 @@ function way_function (way, result)
         push_backward_speed = profile.man_made_speeds[man_made]
       else
         if foot == 'yes' then
-          push_forward_speed = walking_speed
+          push_forward_speed = profile.walking_speed
           if not implied_oneway then
-            push_backward_speed = walking_speed
+            push_backward_speed = profile.walking_speed
           end
         elseif foot_forward == 'yes' then
-          push_forward_speed = walking_speed
+          push_forward_speed = profile.walking_speed
         elseif foot_backward == 'yes' then
-          push_backward_speed = walking_speed
+          push_backward_speed = profile.walking_speed
         elseif way_type_allows_pushing then
-          push_forward_speed = walking_speed
+          push_forward_speed = profile.walking_speed
           if not implied_oneway then
-            push_backward_speed = walking_speed
+            push_backward_speed = profile.walking_speed
           end
         end
       end
@@ -476,8 +476,8 @@ function way_function (way, result)
   if bicycle == "dismount" then
     result.forward_mode = mode.pushing_bike
     result.backward_mode = mode.pushing_bike
-    result.forward_speed = walking_speed
-    result.backward_speed = walking_speed
+    result.forward_speed = profile.walking_speed
+    result.backward_speed = profile.walking_speed
   end
 
 
@@ -537,10 +537,9 @@ function way_function (way, result)
   }
 
   Handlers.run(handlers,way,result,data,profile)
-
 end
 
-function turn_function(turn)
+function turn_function(profile, turn)
   -- compute turn penalty as angle^2, with a left/right bias
   local normalized_angle = turn.angle / 90.0
   if normalized_angle >= 0.0 then

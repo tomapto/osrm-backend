@@ -62,13 +62,13 @@ Feature: Weight tests
     Scenario: Step weights -- way_function: fail if no weight or weight_per_meter property
         Given the profile file "testbot" extended with
         """
-        function specialize()
+        function specialize(profile)
           profile.traffic_signal_penalty = 0
           profile.u_turn_penalty = 0
           profile.weight_name = 'steps'
         end
 
-        function way_function(way, result)
+        function way_function(profile, way, result)
           result.forward_mode = mode.driving
           result.backward_mode = mode.driving
           result.forward_speed = 42
@@ -91,13 +91,13 @@ Feature: Weight tests
     Scenario: Step weights -- way_function: second way wins
         Given the profile file "testbot" extended with
         """
-        function specialize()
+        function specialize(profile)
           profile.traffic_signal_penalty = 0
           profile.u_turn_penalty = 0
           profile.weight_name = 'steps'
         end
 
-        function way_function(way, result)
+        function way_function(profile, way, result)
           result.forward_mode = mode.driving
           result.backward_mode = mode.driving
           result.duration = 42
@@ -125,12 +125,12 @@ Feature: Weight tests
     Scenario: Step weights -- way_function: higher weight_per_meter is preferred
         Given the profile file "testbot" extended with
         """
-        function specialize()
+        function specialize(profile)
           profile.traffic_signal_penalty = 0
           profile.u_turn_penalty = 0
           profile.weight_name = 'steps'
         end
-        function way_function(way, result)
+        function way_function(profile, way, result)
           result.forward_mode = mode.driving
           result.backward_mode = mode.driving
           result.duration = 42
@@ -162,19 +162,19 @@ Feature: Weight tests
     Scenario: Step weights -- segment_function
         Given the profile file "testbot" extended with
         """
-        function specialize()
+        function specialize(profile)
           profile.traffic_signal_penalty = 0
           profile.u_turn_penalty = 0
           profile.weight_name = 'steps'
         end
 
-        function way_function(way, result)
+        function way_function(profile, way, result)
           result.forward_mode = mode.driving
           result.backward_mode = mode.driving
           result.weight = 42
           result.duration = 3
         end
-        function segment_function (segment)
+        function segment_function (profile, segment)
           segment.weight = 1
           segment.duration = 11
         end
@@ -204,24 +204,24 @@ Feature: Weight tests
     Scenario: Step weights -- segment_function and turn_function with weight precision
         Given the profile file "testbot" extended with
         """
-        function specialize()
+        function specialize(profile)
           profile.traffic_signal_penalty = 0
           profile.u_turn_penalty = 0
           profile.weight_name = 'steps'
           profile.weight_precision = 3
         end
 
-        function way_function(way, result)
+        function way_function(profile, way, result)
           result.forward_mode = mode.driving
           result.backward_mode = mode.driving
           result.weight = 42
           result.duration = 3
         end
-        function segment_function (segment)
+        function segment_function (profile, segment)
           segment.weight = 1.11
           segment.duration = 100
         end
-        function turn_function (turn)
+        function turn_function (profile, turn)
           print (turn.angle)
           turn.weight = 2 + turn.angle / 100
           turn.duration = turn.angle
@@ -252,19 +252,19 @@ Feature: Weight tests
     Scenario: Step weights -- segment_function with speed and turn updates
         Given the profile file "testbot" extended with
         """
-        function specialize()
+        function specialize(profile)
           profile.traffic_signal_penalty = 0
           profile.u_turn_penalty = 0
           profile.weight_name = 'steps'
         end
 
-        function way_function(way, result)
+        function way_function(profile, way, result)
           result.forward_mode = mode.driving
           result.backward_mode = mode.driving
           result.weight = 42
           result.duration = 3
         end
-        function segment_function (segment)
+        function segment_function (profile, segment)
           segment.weight = 10
           segment.duration = 11
         end
@@ -302,7 +302,7 @@ Feature: Weight tests
     Scenario: Step weights -- segment_function with speed and turn updates with fallback to durations
         Given the profile file "testbot" extended with
         """
-        function specialize()
+        function specialize(profile)
           profile.weight_precision = 3
         end
         """

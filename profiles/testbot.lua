@@ -2,16 +2,12 @@ api_version = 2
 -- Testbot profile
 
 -- Moves at fixed, well-known speeds, practical for testing speed and travel times:
-
 -- Primary road:  36km/h = 36000m/3600s = 100m/10s
 -- Secondary road:  18km/h = 18000m/3600s = 100m/20s
 -- Tertiary road:  12km/h = 12000m/3600s = 100m/30s
 
--- these settings are read externally
-profile = {}
-
 function initialize()
-  profile = {
+  return {
     continue_straight_at_waypoint = true,
     use_turn_restrictions         = true,
     max_speed_for_map_matching    = 30/3.6, --km -> m/s
@@ -45,7 +41,7 @@ function limit_speed(speed, limits)
   return speed
 end
 
-function node_function (node, result)
+function node_function (profile, node, result)
   local traffic_signal = node:get_value_by_key("highway")
 
   if traffic_signal and traffic_signal == "traffic_signals" then
@@ -54,7 +50,7 @@ function node_function (node, result)
   end
 end
 
-function way_function (way, result)
+function way_function (profile, way, result)
   local highway = way:get_value_by_key("highway")
   local name = way:get_value_by_key("name")
   local oneway = way:get_value_by_key("oneway")
@@ -124,7 +120,7 @@ function way_function (way, result)
   end
 end
 
-function turn_function (turn)
+function turn_function (profile, turn)
   if turn.direction_modifier == direction_modifier.uturn then
     turn.duration = profile.uturn_penalty
     turn.weight = profile.uturn_penalty

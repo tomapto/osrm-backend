@@ -7,12 +7,10 @@ local Sequence = require('lib/sequence')
 local Handlers = require("lib/handlers")
 local next = next       -- bind to local for speed
 
-local use_left_hand_driving = false
-
-profile = {}
 
 function initialize()
-  profile = {
+  local use_left_hand_driving = false
+  return {
     max_speed_for_map_matching      = 180/3.6, -- 180kmph -> m/s
     use_turn_restrictions           = true,
     continue_straight_at_waypoint   = true,
@@ -263,7 +261,7 @@ function initialize()
   }
 end
 
-function node_function (node, result)
+function node_function (profile, node, result)
   -- parse access and barrier tags
   local access = find_access_tag(node, profile.access_tags_hierarchy)
   if access then
@@ -290,7 +288,7 @@ function node_function (node, result)
   end
 end
 
-function way_function(way, result)
+function way_function(profile, way, result)
   -- the intial filtering of ways based on presence of tags
   -- affects processing times significantly, because all ways
   -- have to be checked.
@@ -373,7 +371,7 @@ function way_function(way, result)
   Handlers.run(handlers,way,result,data,profile)
 end
 
-function turn_function (turn)
+function turn_function (profile, turn)
   -- Use a sigmoid function to return a penalty that maxes out at turn_penalty
   -- over the space of 0-180 degrees.  Values here were chosen by fitting
   -- the function to some turn penalty samples from real driving.

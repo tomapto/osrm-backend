@@ -1,20 +1,19 @@
 api_version = 2
 -- Rasterbot profile
 
-profile = {}
 
 function initialize()
-  profile = {
+  return {
     call_tagless_node_function = false
   }
 end
 
 -- Minimalist node_ and way_functions in order to test source_ and segment_functions
 
-function node_function (node, result)
+function node_function (profile, node, result)
 end
 
-function way_function (way, result)
+function way_function (profile, way, result)
   local highway = way:get_value_by_key("highway")
   local name = way:get_value_by_key("name")
 
@@ -29,7 +28,7 @@ function way_function (way, result)
   result.backward_speed = 15
 end
 
-function source_function ()
+function source_function (profile)
   local path = os.getenv('OSRM_RASTER_SOURCE')
   if not path then
     path = "rastersource.asc"
@@ -45,7 +44,7 @@ function source_function ()
   )
 end
 
-function segment_function (segment)
+function segment_function (profile, segment)
   local sourceData = sources:interpolate(raster_source, segment.source.lon, segment.source.lat)
   local targetData = sources:interpolate(raster_source, segment.target.lon, segment.target.lat)
   io.write("evaluating segment: " .. sourceData.datum .. " " .. targetData.datum .. "\n")

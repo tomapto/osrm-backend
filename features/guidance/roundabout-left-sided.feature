@@ -5,7 +5,7 @@ Feature: Basic Roundabout
         Given a grid size of 10 meters
         Given the profile file "car" extended with
            """
-           function specialize()
+           function specialize(profile)
              profile.left_hand_driving = true
            end
            """
